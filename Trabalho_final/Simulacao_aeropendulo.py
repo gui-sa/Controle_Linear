@@ -73,7 +73,7 @@ plt.title("Simulacao do aeropendulo")
 plt.legend()
 plt.show()
 
-plt.Figure()
+plt.figure()
 plt.plot(np.linspace(0, Tsim,kend), v , lw = 2.0, color = "b", label = "Velocidade rotacao das helices")
 plt.xlabel("Tempo [s]")
 plt.ylabel("Velociade de rotação [rad/s]")
