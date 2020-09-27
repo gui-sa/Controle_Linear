@@ -39,33 +39,75 @@ omega_eq=np.zeros(kend)+np.sqrt((m*g*np.sin(theta_eq))/Kh) #[rad/s] omega_eq uti
 #velocidades
 omega =np.zeros(kend)  # velocidade de rotacao do motor real
 v =omega-omega_eq  # velocidade de rotacao do motor linearizada
+v_p=np.zeros(kend)#acao de controle proporcinal
+v_i=np.zeros(kend)#acao de controle integral
+v_d=np.zeros(kend)#acao de controle derivativo
 #angulos
-theta = np.zeros(kend)# Angulo do pendulo com a estrutura real [rad]
+theta = np.zeros(kend)+0*np.pi/180# Angulo do pendulo com a estrutura real [rad]
 phi = theta-theta_eq# Angulo do pendulo com o ponto de equilibrio [rad]
-theta_med = np.zeros(kend) # Angulo do pendulo com a estrutura
+theta_med = np.zeros(kend)+0*np.pi/180 # Angulo do pendulo com a estrutura
 phi_med=theta_med-theta_eq# Angulo do pendulo linearizado
 
 theta_p = np.zeros(kend) # velocidade de aeropendulo real
 theta_pp = np.zeros(kend) # aceleracao do aeropendulo real
-erro = np.zeros(kend)  #Erro do sistema
+e = np.zeros(kend)  #Erro do sistema
+e_d = np.zeros(kend)  #Erro do sistema
+e_i = np.zeros(kend)  #Erro do sistema
 phi_ref = np.zeros(kend) # Angulacao requerida ou referenciada linearizada
 theta_ref=np.zeros(kend)#Angulo de referencia
 #Referencias
-theta_ref[:]=0 #0 [rad]
+theta_ref[:]=0*np.pi/180 #0 [rad]
 phi_ref[:]=theta_ref[:]-theta_eq # [rad]
 #Parametros do controlador
-Kp = 8 #Só pra testar mesmo
+#Zigler Nichols critico
+kcr=12.05#ganho critico
+Pcr=1.2189#periodo critico
+
+kp = 0.6*kcr #Só pra testar mesmo
+Ti=0.5*Pcr
+Td=0.125*Pcr
+ki=kp/Ti
+kd=kp*Td
+
+#ajuste de parametros
+#kp = 2*kcr #Só pra testar mesmo
+#Ti=0.1*Pcr
+#Td=0.3*Pcr
+#ki=kp/Ti
+#kd=kp*Td
+
+
 
 #%%=======================Loop percorrendo o tempo do experimento
 for k in tqdm.tqdm((range(kend-1))):
 
-    if(Ta*k >= 10):#REFERENCIA
+    if(Ta*k >= 20):#REFERENCIA
+        theta_ref[k] = 40*np.pi/180#angulo de referencial real [rad] 
+        phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
+    if(Ta*k >= 40):
+        theta_ref[k] = 30*np.pi/180#angulo de referencial real [rad] 
+        phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
+    if(Ta*k >= 60):
         theta_ref[k] = 50*np.pi/180#angulo de referencial real [rad] 
         phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
-    
+        
     #CONTROLADOR
-    erro[k] = phi_ref[k] - phi_med[k]
-    v[k]= Kp*erro[k]
+    
+    # Calculo da integral e da derivada do erro
+    e[k] = phi_ref[k] - phi_med[k]
+    e_d[k] = (e[k] - e[k - 1]) / Ta  # derivada do erro
+    e_i[k] = e_i[k - 1] + e[k] * Ta  # integral do erro
+    # Calculando as acoes de controle e o controle total
+    v_p[k] = e[k]*kp
+    v_d[k] = e_d[k]*kd
+    
+    #anti-windup
+    if (v[k-1]==0 or v[k-1]==375):
+        v_i[k] =0
+    else:
+        v_i[k] = e_i[k]*ki
+
+    v[k] = v_p[k]+v_d[k]+v_i[k]#soma das acoes de controle
     
     omega[k]=v[k]+omega_eq[k]#rotacao controlador->linear
     
@@ -78,7 +120,7 @@ for k in tqdm.tqdm((range(kend-1))):
     theta[k+1]=sol[1,0]
     phi[k+1]=theta[k+1]-theta_eq[k+1]
     theta_p[k+1] = sol[1,1]
-    theta_med[k+1] = theta[k+1] #+ uniform(-0.01, 0.01)
+    theta_med[k+1] = theta[k+1] + uniform(-0.02, 0.02)
     phi_med[k+1]=theta_med[k+1]-theta_eq[k+1]
 #%%======================Plotando resultado:
 
@@ -90,6 +132,7 @@ plt.xlabel("Tempo [s]")
 plt.ylabel("Angulo [graus]")
 plt.title("Simulacao do aeropendulo")
 plt.legend()
+plt.grid()
 plt.show()
 
 plt.figure()
@@ -99,4 +142,5 @@ plt.xlabel("Tempo [s]")
 plt.ylabel("Velociade de rotação [rad/s]")
 plt.title("Simulacao do aeropendulo - velocidade de rotação")
 plt.legend()
+plt.grid()
 plt.show()

@@ -39,6 +39,9 @@ omega_eq=np.zeros(kend)+np.sqrt((m*g*np.sin(theta_eq))/Kh) #[rad/s] omega_eq uti
 #velocidades
 omega =np.zeros(kend)  # velocidade de rotacao do motor real
 v =omega-omega_eq  # velocidade de rotacao do motor linearizada
+v_p=np.zeros(kend)#acao de controle proporcinal
+v_i=np.zeros(kend)#acao de controle integral
+v_d=np.zeros(kend)#acao de controle derivativo
 #angulos
 theta = np.zeros(kend)# Angulo do pendulo com a estrutura real [rad]
 phi = theta-theta_eq# Angulo do pendulo com o ponto de equilibrio [rad]
@@ -47,27 +50,22 @@ phi_med=theta_med-theta_eq# Angulo do pendulo linearizado
 
 theta_p = np.zeros(kend) # velocidade de aeropendulo real
 theta_pp = np.zeros(kend) # aceleracao do aeropendulo real
-erro = np.zeros(kend)  #Erro do sistema
+e = np.zeros(kend)  #Erro do sistema
+e_d = np.zeros(kend)  #Erro do sistema
+e_i = np.zeros(kend)  #Erro do sistema
 phi_ref = np.zeros(kend) # Angulacao requerida ou referenciada linearizada
 theta_ref=np.zeros(kend)#Angulo de referencia
 #Referencias
 theta_ref[:]=0 #0 [rad]
 phi_ref[:]=theta_ref[:]-theta_eq # [rad]
-#Parametros do controlador
-Kp = 8 #Só pra testar mesmo
+
 
 #%%=======================Loop percorrendo o tempo do experimento
 for k in tqdm.tqdm((range(kend-1))):
 
-    if(Ta*k >= 10):#REFERENCIA
-        theta_ref[k] = 50*np.pi/180#angulo de referencial real [rad] 
-        phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
-    
-    #CONTROLADOR
-    erro[k] = phi_ref[k] - phi_med[k]
-    v[k]= Kp*erro[k]
-    
-    omega[k]=v[k]+omega_eq[k]#rotacao controlador->linear
+    if(Ta*k >= 1):#REFERENCIA
+        omega[k]=omega_eq[k]
+        
     
     #ATUADOR
     omega[k] = min(omega[k], 375)  # maximo 375 rad/s
@@ -76,27 +74,17 @@ for k in tqdm.tqdm((range(kend-1))):
     #SISTEMA NAO LINEAR
     sol = odeint(din_aeropendulo, [theta[k], theta_p[k]], [ Ta*k, Ta*(k+1) ], args= (omega[k-150],))#args recebe a velocidade real do motor (ou seja 150 ms atrasado)
     theta[k+1]=sol[1,0]
-    phi[k+1]=theta[k+1]-theta_eq[k+1]
     theta_p[k+1] = sol[1,1]
-    theta_med[k+1] = theta[k+1] #+ uniform(-0.01, 0.01)
-    phi_med[k+1]=theta_med[k+1]-theta_eq[k+1]
+    theta_med[k+1] = theta[k+1] + uniform(-0.02, 0.02)
 #%%======================Plotando resultado:
 
 plt.figure()
-plt.plot(np.linspace(0, Tsim,kend) , theta*180.0/np.pi, lw =2.0 , color="k", label = "Posicao aeropendulo")
-theta_ref[-1]=theta_ref[-2]
-plt.plot(np.linspace(0, Tsim,kend) , theta_ref*180.0/np.pi, lw =2.0 , color="r", label = "Referencia-angulo")
+plt.plot(np.linspace(0, Tsim,kend) , theta*180.0/np.pi, lw =2.0 , color="k", label = "Posicao aeropendulo [º]")
+omega[-1]=omega[-2]
+plt.plot(np.linspace(0, Tsim,kend), omega , lw = 2.0, color = "b", label = "Velocidade rotacao das helices [rad/s]")
 plt.xlabel("Tempo [s]")
-plt.ylabel("Angulo [graus]")
+plt.ylabel("Y")
 plt.title("Simulacao do aeropendulo")
 plt.legend()
-plt.show()
-
-plt.figure()
-omega[-1]=omega[-2]
-plt.plot(np.linspace(0, Tsim,kend), omega , lw = 2.0, color = "b", label = "Velocidade rotacao das helices")
-plt.xlabel("Tempo [s]")
-plt.ylabel("Velociade de rotação [rad/s]")
-plt.title("Simulacao do aeropendulo - velocidade de rotação")
-plt.legend()
+plt.grid()
 plt.show()
