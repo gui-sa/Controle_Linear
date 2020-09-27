@@ -70,11 +70,11 @@ ki=kp/Ti
 kd=kp*Td
 
 #ajuste de parametros
-#kp = 2*kcr #Só pra testar mesmo
-#Ti=0.1*Pcr
-#Td=0.3*Pcr
-#ki=kp/Ti
-#kd=kp*Td
+kp = 2*kcr #Só pra testar mesmo
+Ti=0.1*Pcr
+Td=0.3*Pcr
+ki=kp/Ti
+kd=kp*Td
 
 
 
@@ -88,9 +88,11 @@ for k in tqdm.tqdm((range(kend-1))):
         theta_ref[k] = 30*np.pi/180#angulo de referencial real [rad] 
         phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
     if(Ta*k >= 60):
+        theta_ref[k] = (30+(k*Ta-60)*1)*np.pi/180#angulo de referencial real [rad] 
+        phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
+    if(Ta*k >= 80):
         theta_ref[k] = 50*np.pi/180#angulo de referencial real [rad] 
         phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
-        
     #CONTROLADOR
     
     # Calculo da integral e da derivada do erro
@@ -120,7 +122,7 @@ for k in tqdm.tqdm((range(kend-1))):
     theta[k+1]=sol[1,0]
     phi[k+1]=theta[k+1]-theta_eq[k+1]
     theta_p[k+1] = sol[1,1]
-    theta_med[k+1] = theta[k+1] + uniform(-0.02, 0.02)
+    theta_med[k+1] = theta[k+1]# + uniform(-0.02, 0.02)
     phi_med[k+1]=theta_med[k+1]-theta_eq[k+1]
 #%%======================Plotando resultado:
 
