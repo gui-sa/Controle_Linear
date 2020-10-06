@@ -29,7 +29,7 @@ def din_aeropendulo(y, t, v):#dinamica do aeropendulo y = theta_pp /  t= tempo d
 #%%======= Parametros de simulacao
 # Parametros de simulacao
 Ta = 1e-3  # intervalo de amostragem
-Tsim = 100 #tempo final
+Tsim = 80 #tempo final
 kend = int(Tsim/Ta) # quantidade de iteracoes
 
 # scopes
@@ -63,16 +63,16 @@ phi_ref[:]=theta_ref[:]-theta_eq # [rad]
 kcr=12.05#ganho critico
 Pcr=1.2189#periodo critico
 
-kp = 0.6*kcr #Só pra testar mesmo
+kp = 0.6*kcr
 Ti=0.5*Pcr
 Td=0.125*Pcr
 ki=kp/Ti
 kd=kp*Td
 
-#ajuste de parametros
-kp = 2*kcr #Só pra testar mesmo
-Ti=0.1*Pcr
-Td=0.3*Pcr
+#PARAMETROS AJUSTADOS
+kp = 2*kcr
+Ti=0.049*Pcr
+Td=1.5*Pcr
 ki=kp/Ti
 kd=kp*Td
 
@@ -81,16 +81,16 @@ kd=kp*Td
 #%%=======================Loop percorrendo o tempo do experimento
 for k in tqdm.tqdm((range(kend-1))):
 
-    if(Ta*k >= 20):#REFERENCIA
+    if(Ta*k >= 0):#REFERENCIA
         theta_ref[k] = 40*np.pi/180#angulo de referencial real [rad] 
         phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
-    if(Ta*k >= 40):
+    if(Ta*k >= 20):
         theta_ref[k] = 30*np.pi/180#angulo de referencial real [rad] 
         phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
-    if(Ta*k >= 60):
-        theta_ref[k] = (30+(k*Ta-60)*1)*np.pi/180#angulo de referencial real [rad] 
+    if(Ta*k >= 40):
+        theta_ref[k] = (30+(k*Ta-40)*1)*np.pi/180#angulo de referencial real [rad] 
         phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
-    if(Ta*k >= 80):
+    if(Ta*k >= 60):
         theta_ref[k] = 50*np.pi/180#angulo de referencial real [rad] 
         phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
     #CONTROLADOR
