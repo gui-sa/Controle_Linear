@@ -21,7 +21,7 @@ TfTD = tf(pade(Td,ordem_pade)[0],pade(Td,ordem_pade)[1])
 G1 = G*TfTD
 #%% Requisitos de projeto
 
-
+rlocus(G1)
 teste = tf2ss(G)  #Trabalhando com G, e deixando os polos dominantes em relacao aos polos do PADE
 A = np.flip(teste.A)
 B = np.flip(teste.B)

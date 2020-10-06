@@ -142,7 +142,7 @@ omega[-1]=omega[-2]
 plt.plot(np.linspace(0, Tsim,kend), omega , lw = 2.0, color = "b", label = "Velocidade rotacao das helices")
 plt.xlabel("Tempo [s]")
 plt.ylabel("Velociade de rotação [rad/s]")
-plt.title("Simulacao do aeropendulo - velocidade de rotação")
+plt.title("Simulacao do aeropendulo - velocidade de rotação - ação de controle")
 plt.legend()
 plt.grid()
 plt.show()

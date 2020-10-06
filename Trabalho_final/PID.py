@@ -102,7 +102,7 @@ for k in tqdm.tqdm((range(kend-1))):
     theta[k+1]=sol[1,0]
     phi[k+1]=theta[k+1]-theta_eq[k+1]
     theta_p[k+1] = sol[1,1]
-    theta_med[k+1] = theta[k+1] + uniform(-0.02, 0.02)
+    theta_med[k+1] = theta[k+1] #+ uniform(-0.02, 0.02)
     phi_med[k+1]=theta_med[k+1]-theta_eq[k+1]
 #%%======================Plotando resultado:
 

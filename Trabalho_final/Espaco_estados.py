@@ -79,7 +79,7 @@ x_til_ponto = np.zeros((kend,2,1))
 for k in tqdm.tqdm((range(kend-1))):
 
         
-    v[k] = np.dot(-K,x_til[k])
+    v[k] = np.dot(-K,x_til[k]) #Realimentação de estados
     
     omega[k]=v[k]+omega_eq[k]#rotacao controlador->linear
         
@@ -102,7 +102,7 @@ for k in tqdm.tqdm((range(kend-1))):
     x_til_ponto[k] = np.dot(A, x_til[k]) + np.dot(B,v[k]) + np.dot(Ke, (phi_med[k] - y_til[k])) #x_til_ponto estimado
     
     x_til[k+1] = x_til[k] + x_til_ponto[k]*Ta #integracao numerica por retangulo de Euler
-    
+
 
 
 #%%======================Plotando resultado:
@@ -114,6 +114,7 @@ plt.plot(np.linspace(0, Tsim,kend) , theta_ref*180.0/np.pi, lw =2.0 , color="r",
 plt.xlabel("Tempo [s]")
 plt.ylabel("Angulo [graus]")
 plt.title("Simulacao do aeropendulo")
+plt.grid()
 plt.legend()
 plt.show()
 
@@ -122,6 +123,7 @@ omega[-1]=omega[-2]
 plt.plot(np.linspace(0, Tsim,kend), omega , lw = 2.0, color = "b", label = "Velocidade rotacao das helices")
 plt.xlabel("Tempo [s]")
 plt.ylabel("Velociade de rotação [rad/s]")
-plt.title("Simulacao do aeropendulo - velocidade de rotação")
+plt.title("Simulacao do aeropendulo - velocidade de rotação - ação de controle")
+plt.grid()
 plt.legend()
 plt.show()
