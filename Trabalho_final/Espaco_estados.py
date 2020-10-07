@@ -56,13 +56,14 @@ theta_ref[:]=0 #0 [rad]
 phi_ref[:]=theta_ref[:]-theta_eq # [rad]
 
 #Parametros do controlador 
-K = np.array([-21.52366751,   2.96947505]) #obtidos por ackerman
-#K = np.array([[1.98782273e-04, -9.69696970e-05]])
+#K = np.array([-21.52366751,   2.96947505]) #obtidos por ackerman e tr 1 segundo
+K = np.array([[0.86434184, 6.19977139]])
 
-Ke = np.array([[202.19694102],
-               [4474.20068109]])#obtidos por ackerman
+#Ke = np.array([[202.19694102],
+#                [4474.20068109]])#obtidos por ackerman e tr 1 segundo
 
-#Ke = np.array([[3.27675352], [1462.85131722]])
+Ke =0# np.array([[ 20.23242662, 141.64814536]])
+Ke = np.transpose(Ke)
 
 A = np.array([[0,1],
               [-28.9847261,-0.25969]])
@@ -79,6 +80,7 @@ x_til_ponto = np.zeros((kend,2,1))
 rss=np.zeros(kend)
 xss=np.zeros((kend,2,1))
 uss=np.zeros(kend)
+erro=np.zeros(kend)
 
 Nx=np.array([[6.31233749],
                  [0]])
@@ -91,27 +93,43 @@ for k in tqdm.tqdm((range(kend-1))):
         theta_ref[k] = 40*np.pi/180#angulo de referencial real [rad] 
         phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
         rss[k]=phi_ref[k]
-    # if(Ta*k >= 20):
-    #     theta_ref[k] = 30*np.pi/180#angulo de referencial real [rad] 
-    #     phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
-    #     rss[k]=phi_ref[k]
-    # #if(Ta*k >= 40):
-    #     #theta_ref[k] = (30+(k*Ta-40)*1)*np.pi/180#angulo de referencial real [rad] 
-    #     #phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
-    #     #rss[k]=phi_ref[k]
-    # if(Ta*k >= 30):
-    #     theta_ref[k] = 50*np.pi/180#angulo de referencial real [rad] 
-    #     phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
-    #     rss[k]=phi_ref[k]
-    # #CONTROLADOR
+    if(Ta*k >= 20):
+        theta_ref[k] = 30*np.pi/180#angulo de referencial real [rad] 
+        phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
+        rss[k]=phi_ref[k]
+    if(Ta*k >= 40):
+        theta_ref[k] = 30*np.pi/180#angulo de referencial real [rad] 
+        phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
+        rss[k]=phi_ref[k]
+    if(Ta*k >= 44):
+        theta_ref[k] = 34*np.pi/180#angulo de referencial real [rad] 
+        phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
+        rss[k]=phi_ref[k]
+    if(Ta*k >= 48):
+        theta_ref[k] = 38*np.pi/180#angulo de referencial real [rad] 
+        phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
+        rss[k]=phi_ref[k]
+    if(Ta*k >= 52):
+        theta_ref[k] = 42*np.pi/180#angulo de referencial real [rad] 
+        phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
+        rss[k]=phi_ref[k]
+    if(Ta*k >= 56):
+        theta_ref[k] = 46*np.pi/180#angulo de referencial real [rad] 
+        phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
+        rss[k]=phi_ref[k]              
+    if(Ta*k >= 60):
+        theta_ref[k] = 50*np.pi/180#angulo de referencial real [rad] 
+        phi_ref[k] = theta_ref[k]-theta_eq[k] #angulo para o controlador[rad]
+        rss[k]=phi_ref[k]
+    #CONTROLADOR
     
     uss[k]=Nu*rss[k]
     xss[k]=np.dot(Nx,rss[k])
     
     
-    #v[k] = uss[k] - np.dot(K,(x_til[k]-xss[k])) #Realimentação de estados
+    v[k] = uss[k] - np.dot(K,(x_til[k]-xss[k])) #Realimentação de estados
     
-    v[k]=np.dot(-K,x_til[k])
+    #v[k]=np.dot(-K,x_til[k])
     omega[k]=v[k]+omega_eq[k]#rotacao controlador->linear
         
     
@@ -124,13 +142,14 @@ for k in tqdm.tqdm((range(kend-1))):
     theta[k+1]=sol[1,0]
     phi[k+1]=theta[k+1]-theta_eq[k+1]
     theta_p[k+1] = sol[1,1]
-    theta_med[k+1] = theta[k+1] #+ uniform(-0.01, 0.01)
+    theta_med[k+1] = theta[k+1]# + uniform(-0.02, 0.02)
     phi_med[k+1]=theta_med[k+1]-theta_eq[k+1]
 
 
     #Observador:
     y_til[k]  = np.dot(C,x_til[k]) #Saida estimada
-    x_til_ponto[k] = np.dot(A, x_til[k]) + np.dot(B,v[k]) + np.dot(Ke, (phi_med[k] - y_til[k])) #x_til_ponto estimado
+    erro[k] = phi_med[k] - y_til[k] 
+    x_til_ponto[k] = np.dot(A, x_til[k]) + np.dot(B,v[k]) + np.dot(Ke, erro[k]) #x_til_ponto estimado
     
     x_til[k+1] = x_til[k] + x_til_ponto[k]*Ta #integracao numerica por retangulo de Euler
 
