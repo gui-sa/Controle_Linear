@@ -83,7 +83,7 @@ polos_desejados = polos_by_csi_wn(csi, wn_by_csi_tr(csi, 0.5))
 #polos_desejados = [(-0.1298+5.3822j),(-0.1298-5.3822j)]
 
 K = acker(A, B, polos_desejados)#Obtendo a matriz linha do regulador K 
-Ke = acker(np.transpose(A), np.transpose(C), np.real(np.array(polos_desejados))*5)#Obtendo matriz coluna Ke do estimador. Os polos do estimador devem ser 10x maiores (mais rapidos)
+Ke = acker(np.transpose(A), np.transpose(C),np.real(np.array(polos_desejados))*5)#Obtendo matriz coluna Ke do estimador. Os polos do estimador devem ser 10x maiores (mais rapidos)
 
 Inv=np.linalg.inv(ABCD)
 

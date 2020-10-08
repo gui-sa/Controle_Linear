@@ -62,7 +62,7 @@ K = np.array([[0.86434184, 6.19977139]])
 #Ke = np.array([[202.19694102],
 #                [4474.20068109]])#obtidos por ackerman e tr 1 segundo
 
-Ke =0# np.array([[ 20.23242662, 141.64814536]])
+Ke =np.array([[ 21, 0]])
 Ke = np.transpose(Ke)
 
 A = np.array([[0,1],
@@ -138,7 +138,7 @@ for k in tqdm.tqdm((range(kend-1))):
     omega[k] = max(omega[k], 0)  # minimo 0
     
     #SISTEMA NAO LINEAR
-    sol = odeint(din_aeropendulo, [theta[k], theta_p[k]], [ Ta*k, Ta*(k+1) ], args= (omega[k],))#args recebe a velocidade real do motor (ou seja 150 ms atrasado)
+    sol = odeint(din_aeropendulo, [theta[k], theta_p[k]], [ Ta*k, Ta*(k+1) ], args= (omega[k-150],))#args recebe a velocidade real do motor (ou seja 150 ms atrasado)
     theta[k+1]=sol[1,0]
     phi[k+1]=theta[k+1]-theta_eq[k+1]
     theta_p[k+1] = sol[1,1]
